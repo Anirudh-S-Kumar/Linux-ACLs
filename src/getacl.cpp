@@ -24,5 +24,8 @@ int main(int sysc, char** sysv){
     }
 
     ACL acl(acl_str);
+
+    // check if person is allowed to see the ACL
+    if (!Validation::verify_acl(acl, getuid())) return 1;
     std::cout << acl << std::endl;    
 }

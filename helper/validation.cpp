@@ -20,11 +20,15 @@ namespace Validation{
         */ 
         std::filesystem::path full_path = std::filesystem::absolute(file);
 
-        struct stat sb;
-        if ((stat(full_path.c_str(), &sb) == 0) && S_ISREG(sb.st_mode)){
-            return true;
+        if (std::filesystem::exists(full_path)) {
+            if (std::filesystem::is_regular_file(full_path) || std::filesystem::is_directory(full_path)) {
+                return true;
+            } else {
+                std::cerr << "Error: " << full_path.c_str() << " is not a file or directory" << std::endl;
+            }
+
         } else {
-            std::cerr << "Error: " << full_path.c_str() << " is not a file" << std::endl;
+            std::cerr << "Error: " << full_path.c_str() << " does not exist" << std::endl;
         }
         return false;
     }
@@ -49,7 +53,7 @@ namespace Validation{
         if (acl.check(getpwnam(user.c_str())->pw_uid)){
             return true;
         } else {
-            std::cerr << "Error: " << user << " does not have the permissions to edit ACL for " << std::endl;
+            std::cerr << "Error: " << user << " does not have the permissions to edit ACL for this file/drectory" << std::endl;
         }
         return false;
     }
@@ -66,7 +70,7 @@ namespace Validation{
         if (acl.check(user)){
             return true;
         } else {
-            std::cerr << "Error: " << "You does not have the permissions to edit ACL for " << std::endl;
+            std::cerr << "Error: " << "You does not have the permissions to edit ACL for this file/directory" << std::endl;
         }
         return false;
     }
