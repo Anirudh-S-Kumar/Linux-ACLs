@@ -1,18 +1,19 @@
 #include "getacl.h"
+#include <validation.h>
+#include <misc.h>
 
 #define BUFFER_SIZE 256
 #define DEBUG_MODE
 
 int main(int sysc, char** sysv){
     std::string file;
-    Validation validation;
     if (sysc < 2){
         std::cout << "Usage: " << "getacl" << " <file>" << std::endl;
         return 1;
     }
 
     file = sysv[1];
-    if (!validation.validate_file(file)) return 1;
+    if (!Validation::validate_file(file)) return 1;
 
     std::string acl_str;
     acl_str.resize(BUFFER_SIZE);
