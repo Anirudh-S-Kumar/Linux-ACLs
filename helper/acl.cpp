@@ -34,8 +34,14 @@ std::string ACL::serialize() {
 
 std::ostream& operator<<(std::ostream& os, const ACL& acl) {
     os << "ACL: { ";
+    // convert the uid to username and then print
     for (int user : acl.acl) {
-        os << user << " ";
+        struct passwd *pw = getpwuid(user);
+        if (pw != NULL) {
+            os << pw->pw_name << " ";
+        } else {
+            os << user << " ";
+        }
     }
     os << "}";
     return os;

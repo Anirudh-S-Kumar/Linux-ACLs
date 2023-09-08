@@ -11,6 +11,7 @@
 #include <boost/archive/binary_iarchive.hpp>
 #include <boost/serialization/set.hpp>
 #include <sstream>
+#include <pwd.h>
 
 class ACL {
 private:

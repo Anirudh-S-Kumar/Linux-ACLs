@@ -1,8 +1,9 @@
 #include "validation.h"
-
 #define DEBUG_MODE
 
-bool Validation::validate_user(std::string user){
+using namespace Validation;
+
+bool validate_user(std::string user){
     /*
     * check if user exists, else exit
     */
@@ -13,7 +14,7 @@ bool Validation::validate_user(std::string user){
     return true;
 }
 
-bool Validation::validate_file(std::string file){
+bool validate_file(std::string file){
     /*
     * check if file exists and is not a directory, else exit
     */    
@@ -28,18 +29,15 @@ bool Validation::validate_file(std::string file){
     return false;
 }
 
-bool Validation::verify_owner(uid_t uid, std::string file){
-    std::filesystem::path full_path = std::filesystem::absolute(file);
-
-    struct stat sb;
-    stat(full_path.c_str(), &sb);
+bool verify_owner(uid_t uid, std::string file){
+    uid_t owner = Misc::get_owner(file);
 
     #ifdef DEBUG_MODE
         std::cerr << "uid: " << uid << std::endl;
-        std::cerr << "sb.st_uid: " << sb.st_uid << std::endl;
+        std::cerr << "owner: " << owner << std::endl;
     #endif
 
-    if (sb.st_uid == uid){
+    if (owner == uid){
         return true;
     } else {
         std::cerr << "Error: " << "You do not have the permissions to edit ACL for " << file << std::endl;
@@ -47,11 +45,20 @@ bool Validation::verify_owner(uid_t uid, std::string file){
     return false;
 }
 
-bool Validation::verify_acl(ACL acl, std::string user){
+bool verify_acl(ACL acl, std::string user){
     if (acl.check(getpwnam(user.c_str())->pw_uid)){
         return true;
     } else {
         std::cerr << "Error: " << user << " does not have the permissions to edit ACL for " << std::endl;
+    }
+    return false;
+}
+
+bool verify_acl(ACL acl, int user){
+    if (acl.check(user)){
+        return true;
+    } else {
+        std::cerr << "Error: " << "You does not have the permissions to edit ACL for " << std::endl;
     }
     return false;
 }

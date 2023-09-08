@@ -1,6 +1,6 @@
 # Define variables
 CC = g++
-CFLAGS = -Wall -Wextra -pedantic -Iinclude -std=c++17 -lboost_serialization
+CFLAGS = -Wall -Wextra -pedantic -Iinclude -std=c++17 -lboost_serialization -g
 SRC_DIR = src
 HELPER_DIR = helper
 OBJ_DIR = obj

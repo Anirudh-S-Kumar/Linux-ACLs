@@ -18,9 +18,8 @@ int main(int argc, char** argv){
     file = argv[2];
 
     // check for valid user and file
-    Validation validation;
-    if (!validation.validate_user(user)) return 1;
-    if (!validation.validate_file(file)) return 1;
+    if (!Validation::validate_user(user)) return 1;
+    if (!Validation::validate_file(file)) return 1;
 
     // get euid, and check if user is root or owner of file
     #ifdef DEBUG_MODE
@@ -29,22 +28,28 @@ int main(int argc, char** argv){
     #endif
 
 
-    if (!validation.verify_owner(getuid(), file)) return 1;
+    if (!Validation::verify_owner(getuid(), file)) return 1;
 
-    // TODO: Check the ACL list as well
     acl_str.resize(BUFFER_SIZE);
     ssize_t acl_attr = getxattr(file.c_str(), "user.acl",  &acl_str[0], acl_str.size());
-    if (acl_attr == -1){
-        acl.add(getuid());
-    }
-    else{
+    if (acl_attr > 0){
         acl = ACL(acl_attr);
-        std::cout << acl << std::endl;
-        if (!validation.verify_acl(acl, user)) return 1;
+        // ACL list exists, check if the calling user is permitted to change the acl
+        if (!Validation::verify_acl(acl, getuid())) return 1;
+
+        // Change to the owner of the file using seteuid, and modifying the acl
+        setuid(Misc::get_owner(file));
+        acl.add(Misc::uid_from_name(user));
     }
-    
-    // adding user to ACL, storing it in the xattr
-    acl.add(getpwnam(user.c_str())->pw_uid);
+    // if acl doesn't exist, create a new one with the person calling setacl, 
+    // and the user passed as argument as the only users
+    else if (acl_attr == 0){
+        if (!Validation::verify_owner(getuid(), file)) return 1;
+        acl.add(getuid()); // adding the user calling setacl
+        acl.add(getpwnam(user.c_str())->pw_uid); // adding the user passed as argument
+    }
+
+    // storing it in the xattr
     acl_str = acl.serialize();
     
     if (setxattr(file.c_str(), "user.acl", acl_str.c_str(), acl_str.size(), 0) == -1){

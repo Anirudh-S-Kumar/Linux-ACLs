@@ -14,6 +14,7 @@
 #include <sys/xattr.h>
 #include "validation.h"
 #include "acl.h"
+#include "misc.h"
 
 #endif
 

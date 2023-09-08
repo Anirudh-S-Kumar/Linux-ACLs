@@ -22,6 +22,6 @@ int main(int sysc, char** sysv){
         return 1;
     }
 
-    // ACL acl(acl_str);
-    // std::cout << acl << std::endl;    
+    ACL acl(acl_str);
+    std::cout << acl << std::endl;    
 }
