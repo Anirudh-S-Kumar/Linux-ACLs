@@ -12,6 +12,7 @@
 #include <boost/serialization/set.hpp>
 #include <sstream>
 #include <pwd.h>
+#include "misc.h"
 
 class ACL {
 private:
@@ -37,6 +38,8 @@ public:
     int top();
     std::string serialize();
     friend std::ostream& operator<<(std::ostream& os, const ACL& acl);
+    bool load(std::string file);
+    bool save(std::string file);
 
 };
 

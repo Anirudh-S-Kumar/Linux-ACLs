@@ -70,7 +70,7 @@ namespace Validation{
         if (acl.check(user)){
             return true;
         } else {
-            std::cerr << "Error: " << "You does not have the permissions to edit ACL for this file/directory" << std::endl;
+            std::cerr << "Error: " << "You do not have the permissions to edit ACL for this file/directory" << std::endl;
         }
         return false;
     }

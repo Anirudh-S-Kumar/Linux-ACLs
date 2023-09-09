@@ -1,6 +1,7 @@
 #include "misc.h"
 using namespace Misc;
 
+#define BUFFER_SIZE 1024
 
 namespace Misc{
     std::string name_from_uid(uid_t uid){
@@ -20,14 +21,10 @@ namespace Misc{
     }
 
     uid_t get_owner(std::string file){
-        uid_t original = getuid();
-        setuid(0);
         std::filesystem::path full_path = std::filesystem::absolute(file);
 
         struct stat sb;
         stat(full_path.c_str(), &sb);
-
-        setuid(original);
         return sb.st_uid;
     }
 }

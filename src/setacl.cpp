@@ -22,43 +22,27 @@ int main(int argc, char** argv){
     if (!Validation::validate_file(file)) return 1;
 
 
-    acl_str.resize(BUFFER_SIZE);
-    ssize_t acl_attr = getxattr(file.c_str(), "user.acl",  &acl_str[0], BUFFER_SIZE);
-    if (acl_attr >= 0){
-        acl = ACL(acl_str);
-        // ACL list exists, check if the calling user is permitted to change the acl
+    bool res = acl.load(file);
+    if (res){
         if (!Validation::verify_acl(acl, getuid())) return 1;
-        // Change to the owner of the file using seteuid
-        #ifdef DEBUG_MODE
-            std::cout << acl << std::endl;
-            std::cout << "Current UID: " << getuid() << std::endl;
-            std::cout << "Owner UID: " << acl.get_owner() << std::endl;
-        #endif
-        
-        if (setuid(acl.get_owner()) < 0){
-            std::cout << setuid(acl.get_owner()) << std::endl;
+        if (seteuid(acl.get_owner()) < 0){
             std::cerr << "Error: " << "Could not change to owner of " << file << std::endl;
             return 1;
         }
     }
     // if acl doesn't exist, create a new one with the person calling setacl, 
-    else if (acl_attr == -1){
-        if (!Validation::verify_owner(getuid(), file)) return 1;
+    else if (not res){
+        if (not Validation::verify_owner(getuid(), file)) return 1;
         acl.set_owner(getuid());
         acl.add(getuid());
     }
 
     // adding user, storing it in the xattr
     acl.add(Misc::uid_from_name(user));
-    std::string write_acl_str = acl.serialize();
+    res = acl.save(file);
 
-    #ifdef DEBUG_MODE
-        std::cout << "Current UID: " << getuid() << std::endl;
-    #endif
-
-    if (setxattr(file.c_str(), "user.acl", write_acl_str.c_str(), write_acl_str.size(), 0) == -1){
-        std::cerr << "Error: " << "Could not set ACL for " << file << std::endl;
-        return 1;
+    if (res){
+        std::cout << "Successfully added " << user << " to ACL of " << file << std::endl;
     }
 
     return 0;

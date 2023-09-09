@@ -1,4 +1,5 @@
 #include "acl.h"
+#define BUFFER_SIZE 1024
 
 ACL::ACL() {}
 ACL::~ACL() {}
@@ -26,7 +27,6 @@ bool ACL::check(int user) {
 }
 
 void ACL::set_owner(uid_t user) {
-    std::cout << "Setting owner to " << user << std::endl;
     owner = user;
 }
 
@@ -39,6 +39,9 @@ int ACL::top() {
 }
 
 std::string ACL::serialize() {
+    /*
+    Serializes the ACL object into a string
+    */
     std::ostringstream oss;
     boost::archive::binary_oarchive oa(oss);
     oa << *this;
@@ -46,18 +49,43 @@ std::string ACL::serialize() {
 }
 
 std::ostream& operator<<(std::ostream& os, const ACL& acl) {
-    os << "Owner: " << acl.owner << std::endl;
+    os << "Owner: " << Misc::name_from_uid(acl.owner) << std::endl;
     os << "ACL: { ";
     // convert the uid to username and then print
     for (int user : acl.acl) {
-        // struct passwd *pw = getpwuid(user);
-        // if (pw != NULL) {
-        //     os << pw->pw_name << " ";
-        // } else {
-        //     os << user << " ";
-        // }
-        os << user << " ";
+        os << Misc::name_from_uid(user) << " ";
     }
     os << "}";
     return os;
+}
+
+bool ACL::load(std::string file){
+    /*
+    Loads the ACL from the xattr of the file
+    */
+    std::filesystem::path full_path = std::filesystem::absolute(file);
+
+    std::string acl_str;
+    acl_str.resize(BUFFER_SIZE);
+    ssize_t acl_attr = getxattr(file.c_str(), "user.acl",  &acl_str[0], acl_str.size());
+    if (acl_attr == -1){
+        return false;
+    }
+
+    *this = ACL(acl_str);
+    return true;
+}
+
+bool ACL::save(std::string file){
+    /*
+    Stores the serialized ACL in the xattr of the file
+    */
+    std::filesystem::path full_path = std::filesystem::absolute(file);
+
+    std::string acl_str = serialize();
+    if (setxattr(file.c_str(), "user.acl", acl_str.c_str(), acl_str.size(), 0) == -1){
+        std::cerr << "Error: " << "Could not set ACL for " << file << std::endl;
+        return false;
+    }
+    return true;
 }
