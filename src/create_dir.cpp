@@ -17,6 +17,7 @@ bool create_dir_and_save_acl(std::string dir_name)
     acl.set_owner(getuid());
     acl.add(getuid(), 7);
     if (not acl.save(dir_name)) return false;
+    std::cout << "Directory created successfully" << std::endl;
     return true;
 }
 
