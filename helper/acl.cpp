@@ -10,20 +10,20 @@ ACL::ACL(std::string serialized_acl) {
     ia >> *this;
 }
 
-ACL::ACL(int user) {
-    acl.insert(user);
+ACL::ACL(int user, int perms) {
+    acl[user] = perms;
 }
 
-void ACL::add(int user) {
-    acl.insert(user);
+void ACL::add(int user, int perms) {
+    acl[user] = perms;
 }
 
 void ACL::remove(int user) {
     acl.erase(user);
 }
 
-bool ACL::check(int user) {
-    return acl.find(user) != acl.end();
+bool ACL::check(int user, int perms) {
+    return ((acl.find(user) != acl.end()) && ((acl[user] & perms) == perms));
 }
 
 void ACL::set_owner(uid_t user) {
@@ -32,10 +32,6 @@ void ACL::set_owner(uid_t user) {
 
 uid_t ACL::get_owner() {
     return owner;
-}
-
-int ACL::top() {
-    return *acl.begin();
 }
 
 std::string ACL::serialize() {
@@ -50,10 +46,10 @@ std::string ACL::serialize() {
 
 std::ostream& operator<<(std::ostream& os, const ACL& acl) {
     os << "Owner: " << Misc::name_from_uid(acl.owner) << std::endl;
-    os << "ACL: { ";
+    os << "ACL: { \n";
     // convert the uid to username and then print
-    for (int user : acl.acl) {
-        os << Misc::name_from_uid(user) << " ";
+    for (auto& user : acl.acl) {
+        os << '\t' << Misc::name_from_uid(user.first) << ": " << Misc::print_perm(user.second) << "\n";
     }
     os << "}";
     return os;
@@ -69,6 +65,7 @@ bool ACL::load(std::string file){
     acl_str.resize(BUFFER_SIZE);
     ssize_t acl_attr = getxattr(file.c_str(), "user.acl",  &acl_str[0], acl_str.size());
     if (acl_attr == -1){
+        std::cerr << "No ACL found for " << file << std::endl;
         return false;
     }
 

@@ -14,8 +14,8 @@ namespace Validation {
     bool validate_user(std::string user);
     bool validate_file(std::string file);
     bool verify_owner(uid_t uid, std::string file);
-    bool verify_acl(ACL acl, std::string user);
-    bool verify_acl(ACL acl, uid_t user);
+    bool verify_acl(ACL acl, std::string user, std::string perm);
+    bool verify_acl(ACL acl, uid_t user, std::string perm);
 };
 
 

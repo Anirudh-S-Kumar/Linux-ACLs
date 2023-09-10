@@ -16,12 +16,9 @@ int main(int sysc, char** sysv){
     if (!Validation::validate_file(file)) return 1;
 
     ACL acl;
-    bool res = acl.load(file);
-    if (not res){
-        std::cout << "No ACL found for " << file << std::endl;
-        return 1;
-    }
+    if (not acl.load(file)) return 1;
+    
     // check if person is allowed to see the ACL
-    if (!Validation::verify_acl(acl, getuid())) return 1;
+    if (!Validation::verify_acl(acl, getuid(), "r")) return 1;
     std::cout << acl << std::endl;    
 }

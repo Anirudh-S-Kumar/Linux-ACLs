@@ -9,7 +9,7 @@
 #include <set>
 #include <boost/archive/binary_oarchive.hpp>
 #include <boost/archive/binary_iarchive.hpp>
-#include <boost/serialization/set.hpp>
+#include <boost/serialization/map.hpp>
 #include <sstream>
 #include <pwd.h>
 #include "misc.h"
@@ -17,7 +17,7 @@
 class ACL {
 private:
     uid_t owner;
-    std::set<int> acl;
+    std::map<int, int> acl;
     friend class boost::serialization::access;
     template<class Archive>
     void serialize(Archive & ar, const unsigned int) {
@@ -28,14 +28,13 @@ private:
 public:
     ACL();
     ACL(std::string serialized_acl);
-    ACL(int user);
+    ACL(int user, int perms);
     ~ACL();
     void set_owner(uid_t user);
     uid_t get_owner();
-    void add(int user);
+    void add(int user, int perms);
     void remove(int user);
-    bool check(int user);
-    int top();
+    bool check(int user, int perm);
     std::string serialize();
     friend std::ostream& operator<<(std::ostream& os, const ACL& acl);
     bool load(std::string file);
