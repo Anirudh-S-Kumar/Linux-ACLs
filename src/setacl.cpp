@@ -11,7 +11,7 @@ int main(int argc, char** argv){
     ACL acl;
 
     if (argc < 4){
-        std::cout << "Usage: " << "setacl" << "-[rwx] <user> <file>" << std::endl;
+        std::cout << "Usage: " << "setacl -[rwx] <user> <file>" << std::endl;
         return 1;
     }
     perms = argv[1];

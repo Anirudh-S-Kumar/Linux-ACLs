@@ -9,7 +9,11 @@
 <pre>
 ├── Owner
 ├── ACL
-   ├── User : Permissions
+   ├── User_1 : Permissions_1
+   ├── User_2 : Permissions_2
+   .
+   .
+   .
 </pre>
 * Owner and User fields store the uids of the respective users
 * For any write operation such as `setacl`, `fput` and `create_dir`, if the ACL doesn't exist, then one is created with the owner added as the owner and stored with the file/directory. 
@@ -30,4 +34,32 @@ export PATH=$PATH:$(pwd)/bin
 
 
 ### Testing 
-* Setting the acl for a 
+* Setting the acl for a file :-
+```bash
+setacl <path> <user> <permissions>
+```
+* Getting the ACL for a file :-
+```bash
+getacl <path>
+```
+* Changing the directory :-
+```bash
+acl_cd <path>
+```
+* Creating a directory :-
+```bash
+create_dir <path>
+```
+* Putting contents in a file :-
+```bash
+fput <path> "<contents>"
+```
+* Getting contents of a file :-
+```bash
+fget <path>
+```
+
+### Attacks/Bugs/Errors Defended against
+* If no ACL exists for a file, then one is created with the owner as the owner of the file, and if the current user is not the owner, then they are not allowed to perform any operations on the file.
+* All the permissions are isolated from each other, and one needs the approriate permissions to perform the operation. For example, only users with read permissions can get the ACL of a file, get contents of a file etc.
+* To avoid leaving the program in a privileged state, the effective uid is changed back to the original uid after the priviledged operation is performed.

@@ -34,6 +34,7 @@ namespace Validation{
     }
 
     bool verify_owner(uid_t uid, std::string file){
+        if (uid == 0) return true;
         uid_t owner = Misc::get_owner(file);
         if (owner == uid){
             return true;
@@ -43,17 +44,8 @@ namespace Validation{
         return false;
     }
 
-    bool verify_acl(ACL acl, std::string user, std::string perm){
-        if (acl.check(Misc::uid_from_name(user), Misc::gen_perm(perm))){
-            // 
-            return true;
-        } else {
-            std::cerr << "Error: " << user << " does not have the permissions for this file/drectory" << std::endl;
-        }
-        return false;
-    }
-
     bool verify_acl(ACL acl, uid_t user, std::string perm){
+        if (user == 0) return true;
         if (acl.check(user, Misc::gen_perm(perm))){
             return true;
         } else {
