@@ -30,14 +30,19 @@ int main(int argc, char const *argv[])
         result += buffer.data();
     }
     result.erase(std::remove(result.begin(), result.end(), '\n'), result.end());
+    
+    // if binary doesn't exist, exit
+    if (result.empty()) {
+        std::cerr << "Error: " << executable << " not found" << std::endl;
+        return 1;
+    }
+
+    
     executable = result;
     //getting the ACL and checking if the user has execute permission
     ACL acl;
     if (not acl.load(executable)) {
-        if (not Validation::verify_owner(getuid(), executable)) return 1;
-    }
-    else {
-        if (not Validation::verify_acl(acl, getuid(), "x")) return 1;
+        return 1;
     }
     
     // changing the user id to the owner of the executable
