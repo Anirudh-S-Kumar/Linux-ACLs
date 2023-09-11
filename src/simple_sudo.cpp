@@ -5,7 +5,6 @@ int main(int argc, char const *argv[])
 {
     std::string command;
     std::string executable;
-    uid_t owner;
     if (argc < 2) {
         std::cerr << "Usage: " << argv[0] << " <command> [args...]" << std::endl;
         return 1;
@@ -32,22 +31,18 @@ int main(int argc, char const *argv[])
     }
     result.erase(std::remove(result.begin(), result.end(), '\n'), result.end());
     executable = result;
-
-    //gett
-
-    // getting file owner
-    struct stat file_stat;
-    if (stat(executable.c_str(), &file_stat) == 0) {
-        owner = file_stat.st_uid;
-    } else {
-        std::cerr << "Executable not found in PATH" << std::endl;
-        return 1;
+    //getting the ACL and checking if the user has execute permission
+    ACL acl;
+    if (not acl.load(executable)) {
+        if (not Validation::verify_owner(getuid(), executable)) return 1;
     }
-
+    else {
+        if (not Validation::verify_acl(acl, getuid(), "x")) return 1;
+    }
     
     // changing the user id to the owner of the executable
     uid_t current_user = getuid();
-    if (setuid(owner) != 0) {
+    if (setuid(Misc::get_owner(executable)) != 0) {
         std::cerr << "seteuid failed: " << std::strerror(errno) << std::endl;
         return 1;
     }
@@ -56,7 +51,7 @@ int main(int argc, char const *argv[])
     std::system(command.c_str());
 
     // changing the user id back to the original user
-    if (setuid(current_user) != 0) {
+    if (seteuid(current_user) != 0) {
         std::cerr << "seteuid failed: " << std::strerror(errno) << std::endl;
         return 1;
     }

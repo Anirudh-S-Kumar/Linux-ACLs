@@ -49,7 +49,7 @@ std::ostream& operator<<(std::ostream& os, const ACL& acl) {
     os << "ACL: { \n";
     // convert the uid to username and then print
     for (auto& user : acl.acl) {
-        os << '\t' << Misc::name_from_uid(user.first) << ": " << Misc::print_perm(user.second) << "\n";
+        os << '\t' << Misc::name_from_uid(user.first) << ":\t" << Misc::print_perm(user.second) << "\n";
     }
     os << "}";
     return os;
