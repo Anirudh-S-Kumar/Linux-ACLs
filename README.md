@@ -1,7 +1,4 @@
-# Assignment 1
-* Name - Anirudh S Kumar
-* Roll No. - 2021517
-## Part 1: ACLs and Setuid
+# Access Control Lists
 
 ### Description of System
 * `fake_root` has uid 0, so behaves like root.
